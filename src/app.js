@@ -20,17 +20,18 @@ var splashWindow = new UI.Window();
 
 var UI = require('ui');
 
-if(localStorage["highScore"] === null) {
+if(highScore === null || highScore === undefined || highScore === "") {
     localStorage["highScore"] = 0;
     highScore = 0;
 }
 
-if(localStorage["username"] === ""){
-	// Text element to inform user
+if(localStorage["username"] === null || localStorage["username"] === undefined || localStorage["username"] === ""){
+	console.log("Username blank");
+  // Text element to inform user
 	var text = new UI.Text({
 		position: new Vector2(0, 60),
 		size: new Vector2(144, 168),
-		text:'Please load your \n character info \n via the config screen \n and restart the app',
+		text:'Please load your \n PSN/XBL info \n via the config screen \n and restart the app',
 		font:'GOTHIC_14_BOLD',
 		color:'white',
 		textOverflow:'wrap',
@@ -42,7 +43,7 @@ if(localStorage["username"] === ""){
 	var text = new UI.Text({
 		position: new Vector2(0, 60),
 		size: new Vector2(144, 168),
-		text:'Your Characters \n are loading...',
+		text:'Your data \n is loading...',
 		font:'GOTHIC_14_BOLD',
 		color:'white',
 		textOverflow:'wrap',
@@ -53,7 +54,7 @@ if(localStorage["username"] === ""){
 
 // Add to splashWindow and show
 splashWindow.add(text);
-splashWindow.show();
+//splashWindow.show();
 
 // Create GlimmerText
 var glimmerText = new UI.Text({
@@ -74,6 +75,16 @@ var glimmerText2 = new UI.Text({
   textAlign: 'center'
 });
 
+var modeText = new UI.Text({
+  position: new Vector2(0, 0),
+  size: new Vector2(144, 20),
+  text:'Mode: ' + globalTimer + ' mins',
+  font:'GOTHIC_14_BOLD',
+  color:'white',
+  textOverflow:'wrap',
+  textAlign:'center',
+  backgroundColor:'black'
+});	
 
 var hashes = [
 	{"hash": "3159615086", "name": "Glimmer"}
@@ -101,8 +112,9 @@ Pebble.addEventListener("webviewclosed", function(e) {
 	}
 });
 
-if(localStorage["username"] === "") {
-	return;
+if(localStorage["username"] === null || localStorage["username"] === undefined || localStorage["username"] === ""){
+	splashWindow.show();
+  return;
 }else{
 
 	if(username){
@@ -142,8 +154,7 @@ if(localStorage["username"] === "") {
             glimmerText.text('Cur: ' + glimmer);
             glimmerText2.text('New: ' + newGlimmer);
             console.log('Glimmer = ' + glimmer);
-					//window.show();
-					splashWindow.hide();
+					  splashWindow.hide();
 				}
 			}
 		);
@@ -166,6 +177,13 @@ function getGlimmer() {
       if(memId && charData){
         newGlimmer = data.Response.data.inventory.currencies[0].value;
         console.log('New Glimmer = ' + newGlimmer);
+        score = newGlimmer - glimmer;
+        console.log('Score = ' + score);
+        if (score > highScore) {
+          highScore = score;
+          console.log('New High Score = ' + highScore);
+          localStorage["highScore"] = score;
+        }
       }
     }
   );
@@ -185,9 +203,6 @@ var bgRect = new UI.Rect({
   size: new Vector2(134, 60),
   backgroundColor: 'red'
 });
-
-// Add Rect to Window
-window.add(bgRect);
 
 // Create TimeText
 var timeText = new UI.Text({
@@ -212,7 +227,11 @@ function startTimer(duration, display) {
 
         display.text(minutes + ":" + seconds);
         //console.log(minutes + ":" + seconds);
-
+        if (timer === 40) {
+          Vibe.vibrate('short');
+          setTimeout(function(){ Vibe.vibrate('short'); }, 1000);
+        }
+          
         if (--timer < 0) {
             //timer = duration;
             display.text('Done!');
@@ -220,13 +239,15 @@ function startTimer(duration, display) {
             clearInterval(IntervalID);
             getGlimmer();
             glimmerText2.text('New: ' + newGlimmer);
-            IntervalID = 0;
             bgRect.backgroundColor('red');
+            setTimeout(function(){ IntervalID = 0; }, 1000);
         }
     }, 1000);
 }
 
 // Add the TimeText
+window.add(bgRect);
+window.add(modeText);
 window.add(timeText);
 window.add(glimmerText);
 window.add(glimmerText2);
@@ -272,21 +293,26 @@ window.on('click', 'select', function() {
     }     
 });
 
-window.on('click', 'up', function() {
+window.on('click', 'down', function() {
     if (IntervalID === 0) {
         if (newGlimmer === "-")
           getGlimmer();  
-    score = newGlimmer - glimmer;
-    if (score > highScore) {
-        highScore = score;
-        localStorage["highScore"] = score;
-      }
       card.title('Glimmer Score: ' + score);
       card.subtitle('High Score: ' + highScore);
     card.show();
     }      
 });
 
+window.on('click', 'up', function() {
+    if (IntervalID === 0) {
+      if (globalTimer === 60)
+          globalTimer = 10;
+      else 
+        globalTimer = globalTimer + 10;
+    }
+    modeText.text('Mode: ' + globalTimer + ' mins');
+});
+
 // Show the Window
 window.show();
-
+splashWindow.show();

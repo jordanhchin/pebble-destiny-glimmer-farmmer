@@ -10,7 +10,6 @@
         "media": [
             {
                 "file": "images/menu_icon.png",
-                "menuIcon": true,
                 "name": "IMAGE_MENU_ICON",
                 "type": "png"
             },
@@ -28,14 +27,20 @@
                 "file": "fonts/UbuntuMono-Regular.ttf",
                 "name": "MONO_FONT_14",
                 "type": "font"
+            },
+            {
+                "file": "images/glimmer_icon.png",
+                "menuIcon": true,
+                "name": "IMAGES_GLIMMER_ICON_PNG",
+                "type": "png"
             }
         ]
     },
     "sdkVersion": "3",
-    "shortName": "DGF",
+    "shortName": "Glimmer Farmer",
     "uuid": "573c5594-5c6a-4d22-8313-c7675d6da743",
     "versionCode": 1,
-    "versionLabel": "1.0",
+    "versionLabel": "1.1",
     "watchapp": {
         "watchface": false
     }
